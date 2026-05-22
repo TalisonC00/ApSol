@@ -26,41 +26,10 @@
         .aba { display: none; width: 100%; height: calc(100vh - 155px); overflow-y: auto; padding-bottom: 50px; -webkit-overflow-scrolling: touch; }
         .ativa { display: block; }
         .card { background: var(--card); padding: 20px; margin: 16px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
-
-        /* TELA DE PAGAMENTO PREMIUM (PAYWALL UI) */
-        #paywall-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: linear-gradient(135deg, #BAE6FD 0%, #F1F5F9 100%); 
-            z-index: 9999; display: none; flex-direction: column; 
-            align-items: center; justify-content: center; padding: 24px; box-sizing: border-box;
-        }
-        
-        .paywall-card {
-            background: #FFFFFF; padding: 32px 24px; border-radius: 36px;
-            box-shadow: 0 20px 50px rgba(30, 41, 59, 0.15); max-width: 360px;
-            width: 100%; text-align: center; box-sizing: border-box; border: 1px solid rgba(255, 255, 255, 0.7);
-        }
-
-        .pay-app-icon { font-size: 50px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
-        .pay-title { font-size: 26px; font-weight: 800; color: var(--text-main); margin: 0 0 8px 0; letter-spacing: -0.5px; }
-        .pay-price { font-size: 32px; font-weight: 800; color: var(--money); margin: 15px 0; display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .pay-desc { font-size: 14px; color: var(--text-sub); margin: 0 0 24px 0; line-height: 1.6; }
-
-        .pay-features { text-align: left; margin-bottom: 28px; background: #F8FAFC; padding: 16px; border-radius: 20px; border: 1px solid #F1F5F9; }
-        .feature-item { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; }
-
-        .btn-pay {
-            background: linear-gradient(135deg, var(--money) 0%, #059669 100%); color: #fff; border: none; padding: 18px;
-            border-radius: 18px; width: 100%; font-weight: 800; font-size: 16px; cursor: pointer; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3); transition: 0.3s;
-        }
-        .btn-pay:active { transform: scale(0.98); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
-        .pay-footer-note { font-size: 11px; color: var(--text-sub); margin-top: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px; }
-
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
       
         /* MAPA */
         .mapa-card { background: var(--card); margin: 16px; border-radius: 28px; height: calc(100% - 32px); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        /* MAPA MODERNIZADO */
         /* MAPA MODERNIZADO */
         #svg-container svg {
             filter: drop-shadow(0 10px 20px rgba(30, 41, 59, 0.08));
@@ -133,31 +102,6 @@
     </style>
 </head>
 <body>
-    <div id="paywall-overlay">
-        <div class="paywall-card">
-            <div class="pay-app-icon">🗺️</div>
-            <h1 class="pay-title">Minha Jornada</h1>
-            <p class="pay-desc">Esse é o seu diário de bordo oficial</p>
-            
-            <div class="pay-features">
-                <div class="feature-item">📍 <span>Mapa do Brasil Interativo e Colorido</span></div>
-                <div class="feature-item">🕒 <span>Timeline viva com Foto e Vídeo</span></div>
-                <div class="feature-item">💰 <span>Controle de Gastos Inteligente (Hotel, Alimentação...)</span></div>
-                <div class="feature-item">🏆 <span>Painel Dinâmico de Conquistas</span></div>
-                <div class="feature-item">🔒 <span>Armazenamento 100% privado</span></div>
-            </div>
-
-            <div class="pay-price">R$ 19,90</div>
-            <p style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin: -10px 0 20px 0; text-transform: uppercase; letter-spacing: 0.5px;">Pagamento Único • Memórias Vitalícias</p>
-
-            <button class="btn-pay" onclick="irParaPagamento()">Comprar App Minha Jornada</button>
-            
-            <div class="pay-footer-note">
-                🛡️ Checkout Seguro via Stripe
-            </div>
-        </div>
-    </div>
-
     <div class="header">
         <h3> 📸 Minha Jornada</h3>
         <span id="info">ESTADOS CONQUISTADOS: 0</span>
@@ -264,34 +208,9 @@
     <script>
     const DB_NAME = "AppJornadaDB";
     const STORE_NAME = "viagens";
-    const STRIPE_LINK = "https://buy.stripe.com/aFabJ1gVkfMB3okeTYaR200";
     let dbGlobal = []; 
     let controleMapa;
     let filaDeConquistas = []; 
-
-    function irParaPagamento() { window.location.href = STRIPE_LINK; }
-
-    async function verificarAcesso() {
-        const overlay = document.getElementById('paywall-overlay');
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        if (urlParams.get('status') === 'success') {
-            localStorage.setItem('app_pago', 'true');
-            window.history.replaceState({}, document.title, window.location.pathname);
-            if (overlay) overlay.style.display = 'none';
-            mostrarAlerta("Acesso liberado! Bem-vindo à sua jornada. 🎉", "🚀");
-            await carregarTudo();verificarNovasConquistas();
-            return;
-        }
-
-        const jaPagou = localStorage.getItem('app_pago') === 'true';
-        if (jaPagou) {
-            if (overlay) overlay.style.display = 'none';
-            await carregarTudo();verificarNovasConquistas();
-        } else {
-            if (overlay) overlay.style.display = 'flex';
-        }
-    }
 
     const REGIOES = {
         'NORTE': { icon: '🌳', color: '#22C55E', UFs: ['BRAC','BRAM','BRRR','BRRO','BRPA','BRAP','BRTO'] },
